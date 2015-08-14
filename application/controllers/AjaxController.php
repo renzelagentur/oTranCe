@@ -7,6 +7,9 @@
  * @version         SVN: $Rev$
  * @author          $Author$
  */
+use Application_Model_ImportLog as Log;
+use Application_Model_Message as Message;
+
 /**
  * Ajax Controller
  *
@@ -99,6 +102,7 @@ class AjaxController extends OtranceController
         $languageId    = $params['languageId'];
         $fileTemplate  = $params['fileTemplate'];
         $keys          = $params['keys'];
+        $log           = new Log($languageId, $fileTemplate);
         $this->_data   = $this->_dynamicConfig->getParam('extractedData');
         $i             = 0;
         $fallbackData  = $this->_getFallbackLanguageData($keys, $fileTemplate, $languageId);
@@ -108,20 +112,27 @@ class AjaxController extends OtranceController
             if (!empty($fallbackData[$key]) && $fallbackData[$key] == $this->_data[$key]) {
                 // value is the same as in the fallback language
                 // check if user is allowed to import such phrases
-                $saveKey = false;
-                if ($this->_userModel->hasRight('importEqualVar')) {
-                    $saveKey = true;
+                $saveKey = true;
+                if (!$this->_userModel->hasRight('importEqualVar')) {
+                    $saveKey = false;
+                    $ret['data'][$i]                  = array(
+                        'id' => md5($key),
+                        'result' => Message::NO_PERMISSION_TO_ADD_NEW_KEY
+                    );
+                    $log->addMessage(Log::TYPE_ERROR, $key, Message::NO_PERMISSION_TO_ADD_NEW_KEY);
+                    $overallResult = false;
                 }
             }
 
-            if ($saveKey === false) {
-                $ret[$i] = array('id' => md5($key), 'result' => 4);
-            } else {
+            if ($saveKey === true) {
                 $res = $this->_saveKey($key, $fileTemplate, $languageId);
-                if ($res !== 1) {
+                if ($res == Message::SAVED_SUCCESSFULLY) {
+                    $log->addMessage(Log::TYPE_SUCCESS, $key, $res);
+                } else {
+                    $log->addMessage(Log::TYPE_ERROR, $key, $res);
                     $overallResult = false;
                 }
-                $ret[$i] = array('id' => 'k' . md5($key), 'result' => $res);
+                $ret['data'][$i] = array('id' => 'k' . md5($key), 'result' => $res);
             }
             $i++;
         }
@@ -341,9 +352,7 @@ class AjaxController extends OtranceController
 
         //check rights
         $editLanguages = $this->_userModel->getUserLanguageRights();
-        if (!in_array($languageId, $editLanguages)
-            || $keyId == 0 || $languageId == 0
-        ) {
+        if (!in_array($languageId, $editLanguages) || $keyId == 0 || $languageId == 0) {
             $errors[] = $this->view->lang->L_YOU_ARE_NOT_ALLOWED_TO_DO_THIS;
         } else {
             $data     = array($languageId => $translation);
@@ -570,18 +579,16 @@ class AjaxController extends OtranceController
         // check edit right for language
         $userEditRights = $this->_userModel->getUserLanguageRights();
         if (!in_array($languageId, $userEditRights)) {
-            //user is not allowed to edit this language
-            return 2;
+            return Message::NO_PERMISSION_TO_EDIT_LANGUAGE;
         }
 
         if (!$this->_entriesModel->hasEntryWithKey($key, $fileTemplate)) {
-            //it is a new entry - check rights
             if (!$this->_userModel->hasRight('addVar')) {
-                return 3;
+                return Message::NO_PERMISSION_TO_ADD_NEW_KEY;
             } else {
                 // Validate the new key.
                 if (!$this->_entriesModel->validateLanguageKey($key, $fileTemplate)) {
-                    return 4;
+                    return Message::VALIDATE_ERROR_NAME_TOO_SHORT;
                 }
                 // user is allowed to add new keys -> create it
                 $this->_entriesModel->saveNewKey($key, $fileTemplate);
@@ -594,9 +601,9 @@ class AjaxController extends OtranceController
         $value = $this->_data[$key];
         $res   = $this->_entriesModel->saveEntries($keyId, array($languageId => $value));
         if ($res === true) {
-            return 1;
+            return Message::SAVED_SUCCESSFULLY;
         } else {
-            return 0;
+            return Message::ERROR_SAVING;
         }
     }
 

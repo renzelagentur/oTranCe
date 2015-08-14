@@ -7,6 +7,7 @@
  * @version         SVN: $Rev$
  * @author          $Author$
  */
+
 /**
  * Import Controller
  *
@@ -78,7 +79,18 @@ class ImportController extends OtranceController
      */
     public function indexAction()
     {
+        $sessionLog = new Msd_SessionLog('importLog');
         $params = $this->_request->getParams();
+        if (isset($params['clearLog'])) {
+            $sessionLog->clear();
+        }
+
+        // if we have an import result log, redirect to result action
+        $messageCount = $sessionLog->getMessageCount();
+        if ($messageCount > 0) {
+            $this->redirect('import/result');
+        }
+
         $this->_getSelectedLanguage();
         $this->_setSelectedFileTemplate();
         $this->_setAnalyzer();
@@ -257,5 +269,24 @@ class ImportController extends OtranceController
         $this->_dynamicConfig->setParam('importConvertedData', null);
         $this->_dynamicConfig->setParam('extractedData', $extractedData);
         $this->view->extractedData = $extractedData;
+    }
+
+    /**
+     * Show results after finishing import
+     *
+     * @return void
+     */
+    public function resultAction()
+    {
+        $sessionLog = new Msd_SessionLog('importLog');
+        $this->view->assign(
+            array(
+                'errorMessages'  => new Application_Model_Message(),
+                'success'        => $sessionLog->getMessagesOfType(Msd_SessionLog::TYPE_SUCCESS),
+                'warning'        => $sessionLog->getMessagesOfType(Msd_SessionLog::TYPE_WARNING),
+                'error'          => $sessionLog->getMessagesOfType(Msd_SessionLog::TYPE_ERROR),
+                'importedValues' => $this->_dynamicConfig->getParam('extractedData'),
+            )
+        );
     }
 }
