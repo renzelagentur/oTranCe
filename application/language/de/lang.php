@@ -448,5 +448,7 @@ Nur zugeordnete Sprachen können vom Dienst übersetzt werden. Bearbeiten Sie di
 'L_ZEND_ID_STRING_LENGTH_INVALID' => 'Die Eingabe ist ungültig.',
 'L_ZEND_ID_STRING_LENGTH_TOO_LONG' => 'Die Eingabe ist zu lang.',
 'L_ZEND_ID_STRING_LENGTH_TOO_SHORT' => 'Die Eingabe ist zu kurz.',
+'L_IND_SHORT' => 'IND',
+'L_IND_LONG' => 'IND = Nur für einzelne Shops gültig (Übersetzung nicht nötig)',
 );
 return $lang;
