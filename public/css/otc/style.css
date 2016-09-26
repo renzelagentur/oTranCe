@@ -870,3 +870,36 @@ fieldset {
 .ui-selectmenu-status,
 .ui-selectmenu-menu ul { background:#F1F1F1 !important;}
 
+.untranslated {
+    background-color: #DDDDDD;
+}
+
+.untranslated span a {
+    color: #777777;
+}
+
+.untranslated-table thead, .untranslated-table .row-even, .untranslated-table .row-odd {
+    background-color: #DDDDDD;
+}
+
+.ind-header {
+    position: fixed;
+    top: 50px;
+    right: 10px;
+    font-size: 5em;
+    text-shadow: 2px 2px 2px #000;
+    color: #f00;
+}
+
+@media screen and (max-width: 1100px) {
+    .ind-header {
+        position: absolute !important;
+        top: 10px;
+    }
+}
+
+.ind-note {
+    max-width: 580px;
+    padding: 5px;
+    text-align: center;
+}

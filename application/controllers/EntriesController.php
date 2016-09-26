@@ -125,6 +125,12 @@ class EntriesController extends OtranceController
             $this->view->showLanguages,
             $this->view->hits
         );
+
+
+        foreach ($this->view->hits as $k => $hit) {
+            $key = $this->_entriesModel->getKeyById($hit['id']);
+            $this->view->hits[$k]['ind'] = $key['ind'];
+        }
     }
 
     /**
@@ -216,7 +222,7 @@ class EntriesController extends OtranceController
             $this->view->translatable = array_keys($translationService->getLocaleMap());
         }
         $this->view->useTranslationService  = $translationServiceActive;
-        $this->view->translationServiceName = $translationConfig['selectedService'];
+        $this->view->translationServiceName = (isset($translationConfig['selectedService']) ? $translationConfig['selectedService'] : null);
 
         $this->view->skipKeysOffsets = $this->_dynamicConfig->getParam('entries.skippedKeys', array());
         $this->_setReferrer();
@@ -493,6 +499,13 @@ class EntriesController extends OtranceController
     private function _saveEntries($ignoreSmallChange = false)
     {
         $params = $this->getRequest()->getParams();
+
+        $nid = (isset($params['nid'])) ? true : false;
+
+        if(isset($params['id'])) {
+            $this->_entriesModel->setOnlyCertainShopsFlag($params['id'], $nid);
+        }
+
         $values = array();
         foreach ($params as $name => $val) {
             if (substr($name, 0, 5) == 'edit-') {

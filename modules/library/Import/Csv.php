@@ -60,25 +60,27 @@ class Module_Import_Csv implements Msd_Import_Interface
      */
     public function extract($data)
     {
-        $this->_data = str_replace("\xEF\xBB\xBF",'',$data); //remove bom
+        $this->_data = $data;
         unset($data);
         $this->_extractedData = array();
 
-        $fp = fopen('php://temp', 'r+');
+        $this->_lines = explode("\n", $this->_data);
+        $lines_count  = count($this->_lines);
 
-        fwrite($fp, $this->_data);
-        rewind($fp);
-        while (($currentLine = fgetcsv($fp, 0, $this->_separator)) !== FALSE) {
+        for ($i = 0; $i < $lines_count; $i++) {
+            $currentLine = explode($this->_separator, $this->_lines[$i], 2);
+
             $currentKey = trim($currentLine[0]);
-
             if ($currentKey == '' || !isset($currentLine[1])) {
                 continue;
             }
-
             $currentValue = trim($currentLine[1]);
-            $currentKey = $this->cleanInput($currentKey);
+            $dataLength = strlen($currentValue);
 
-            $currentValue = $this->cleanInput($currentValue);
+            if (($currentValue{0} == "'" && $currentValue{$dataLength -1} == "'")
+                || ($currentValue{0} == "\"" && $currentValue{$dataLength -1} == "\"")) {
+                $currentValue = substr($currentValue, 1, $dataLength - 2);
+            }
 
             $this->_extractedData[$currentKey] = $currentValue;
         }
@@ -96,25 +98,5 @@ class Module_Import_Csv implements Msd_Import_Interface
     public function getInfo(Zend_View_Interface $view)
     {
         return $view->render('csv.phtml');
-    }
-
-    /**
-     * removes double " and single ' enclosure
-     *
-     * @param $inputValue
-     * @return string
-     */
-    protected function cleanInput($inputValue)
-    {
-        $inputLength = strlen(trim($inputValue));
-        if ($inputLength > 0){
-            if (($inputValue{0} == "'" && $inputValue{$inputLength - 1} == "'")
-                || ($inputValue{0} == "\"" && $inputValue{$inputLength - 1} == "\"")
-            ) {
-                $inputValue = substr($inputValue, 1, $inputLength - 2);
-                return $inputValue;
-            }
-        }
-        return $inputValue;
     }
 }

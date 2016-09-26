@@ -450,5 +450,8 @@ Only mapped languages can be translated by the external service. Edit the langua
 'L_ZEND_ID_STRING_LENGTH_INVALID' => 'Invalid input.',
 'L_ZEND_ID_STRING_LENGTH_TOO_LONG' => 'The provided input is too long.',
 'L_ZEND_ID_STRING_LENGTH_TOO_SHORT' => 'The provided input is too short.',
+'L_IND' => 'Only certain shops',
+'L_IND_SHORT' => 'IND',
+'L_IND_LONG' => 'IND = Valid only for individual shops (Translation not necessary)',
 );
 return $lang;
