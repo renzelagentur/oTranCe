@@ -107,10 +107,10 @@ echo $this->partial('settings/head-navi.phtml', array('lang' => $this->lang, 'vc
                     </div>
                 </td>
                 <td class="vmiddle"><?php
-                    if ($canEditLanguage !== true) { ?>
+                    if ($canEditLanguage !== true) { /*?>
                         <a class="Formbutton requestEditRights" id="lang-<?php echo $language['locale'];?>"><?php
                             echo $this->getIcon('Edit', '', 16). ' ' . $this->lang->L_REQUEST_EDIT_RIGHT;?>
-                        </a><?php
+                        </a><?php*/
                     } else { ?>
                         &nbsp;<?php
                     } ?>
